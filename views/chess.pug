@@ -1,0 +1,21 @@
+extends layout
+
+block head
+	title Chess
+	link(href="css/chessboard-0.3.0.min.css", rel='stylesheet')
+	script(src='js/chessboard-0.3.0.min.js')
+	script(src='chess.js/chess.js')
+	script(src='js/main.js')
+
+
+block content
+	-var margin = "margin-top:5px"
+	#board(style={width:'400px'})
+	button(id='flip', style={"margin-top" : '5px', "background": "green", "color": "red"}) Flip
+	p Status: 
+		span#status
+	p FEN: 
+		span#fen
+	p PGN: 
+		span#pgn
+
