@@ -1,11 +1,11 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-/*var uri = 'mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/users';
+var uri = 'mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/users';
 mongoose.connect(uri).then(
   () => console.log('works'),
   err => { throw new Error(err)}
-);*/
+);
 
 
 function toLower (v) {
