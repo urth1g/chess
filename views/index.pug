@@ -1,8 +1,10 @@
 extends layout.pug
 
 block content
-	h1 My home page
-
+	h1(style={'text-align':'center'}) My home page
+	nav(style={'text-align':'center'})
+		a(href="/sign-up" style={'margin-right':'30px'}) Register
+		a(href="/login") Login
 	if user
-		span= user.alias
+		h2(style={'text-align':'center'})= user.alias
 
