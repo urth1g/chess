@@ -19,7 +19,7 @@ block head
 	script.
 		$(function () {
 			var name = '';
-			var socket = io.connect("http://localhost:3000/chat");
+			var socket = io.connect("https://fierce-fortress-40988.herokuapp.com");
 			$('#set-name').on('click', () => {
 				name = $("#name-input").val();
 				$('form[name="form1"]').show();
