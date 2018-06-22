@@ -1,7 +1,12 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-mongoose.connect('mongodb://localhost/users');
+try{
+  mongoose.connect('mongodb://localhost/users');
+}catch(e){
+  mongoose.connect('mongodb+srv://cluster0-ftw6k.mongodb.net/test?retryWrites=true');
+}
+
 
 function toLower (v) {
   return v.toLowerCase();
