@@ -1,0 +1,18 @@
+extends layout
+
+block content
+	- var format = {'position': 'relative','left': '50%','transform': 'translateX(-50%)','top': '6px'};
+
+	.container
+		if (message)
+			p= message
+		h2.page-header(style={'text-align':'center'}) Login
+		form(method="POST", action="/login")
+			.form-group
+				label(for='username')
+				input.form-control(type="text", placeholder="Username", name="username")
+			.form-group
+				label(for='password')
+				input.form-control(type="password", placeholder="Password", name="password")
+				button(type="submit" class="btn btn-primary" style=format) Login
+		

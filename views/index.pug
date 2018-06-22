@@ -3,5 +3,6 @@ extends layout.pug
 block content
 	h1 My home page
 
-block content2
-	p test123
+	if user
+		span You are logged in
+

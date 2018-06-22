@@ -19,19 +19,22 @@ block head
 	script.
 		$(function () {
 			var name = '';
-			var socket = io();
+			var socket = io.connect("http://localhost:3000/chat");
 			$('#set-name').on('click', () => {
 				name = $("#name-input").val();
 				$('form[name="form1"]').show();
 				$("#name").hide();
-			})
+			});
+
 			$('form').submit(function(){
-			socket.emit('chat message', $('#m').val());
+			var m = $('#m').val();
+			socket.emit('chat message', {message:m,sender: name});
 			$('#m').val('');
 			return false;
 			});
 			socket.on('chat message', function(msg){
-				$('#messages').append($('<li>').append(`<b>${name}</b>: ${msg}`));
+				console.log("received")
+				$('#messages').append($('<li>').append(`<b>${msg.sender}</b>: ${msg.message}`));
 			});	
 		});
 block content
