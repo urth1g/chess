@@ -49,6 +49,7 @@ router.post('/', [
 
 		var userData = {
 			username: req.body.username,
+			alias: req.body.username,
 			password: req.body.password,
 			email:req.body.email,
 			passwordConfirm: req.body.passwordConfirm
