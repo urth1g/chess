@@ -2,7 +2,9 @@ var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
 //mongoose.connect('mongodb://localhost/users');
-mongoose.connect('mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/users?retryWrites=true');
+mongoose.connect('mongodb://urth:ikariam2@cluster0-ftw6k.mongodb.net/users?retryWrites=true',function(err){
+  throw new Error(err);
+});
 
 
 function toLower (v) {
