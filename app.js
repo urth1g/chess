@@ -20,7 +20,7 @@ var index = require('./src/routes/index.js');
 var chess = require('./src/routes/chess.js');
 var chat = require('./src/routes/chat.js');
 var signUp = require('./src/routes/sign-up.js');
-var login = require('./src/routes/login.js');
+var auth = require('./src/routes/auth.js');
 
 
 // View engine
@@ -50,9 +50,9 @@ app.use(function(req, res, next){
 app.use('/', index);
 app.use('/chess', chess);
 app.use('/chat', chat);
-app.use('/sign-up', signUp);
+app.use('/register', signUp);
 //app.use('/create-user', signUp);
-app.use('/login', login);
+app.use('/', auth);
 
 app.use(function(err, req, res, next) {
     console.log(err);

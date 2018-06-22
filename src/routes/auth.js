@@ -4,7 +4,7 @@ var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 var User = require('../modules/UserScheme.js');
 
-router.get('/', (req,res,next) => {
+router.get('/login', (req,res,next) => {
 	res.render('login')
 });
 
@@ -42,7 +42,12 @@ passport.use(new LocalStrategy(
   }
 ));
 
-router.post('/', 
+router.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
+
+router.post('/login', 
 	passport.authenticate('local', {succesRedirect:'/', failureRedirect:'/login', session: true}), 
 	function(req,res, next){
 		res.redirect('/');

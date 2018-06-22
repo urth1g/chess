@@ -7,6 +7,14 @@ mongoose.connection.on('error', (err) => {
   console.log(err);
 })
 
+var randomString = function(length) {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    for(var i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+};
 
 function toLower (v) {
   return v.toLowerCase();
@@ -17,6 +25,12 @@ var UserSchema = new mongoose.Schema({
     type: String,
     unique: true,
     required: true,
+    trim: true,
+    set: toLower
+  },
+  emailString:{
+    type:String,
+    unique: true,
     trim: true,
     set: toLower
   },
@@ -52,7 +66,9 @@ UserSchema.pre('save', function (next) {
     user.password = hash;
     user.passwordConfirm = hash;
     next();
-  })
+  });
+
+  user.emailString = randomString(20);
 });
 
 

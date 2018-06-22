@@ -1,5 +1,6 @@
 var express = require('express');
 var { check, validationResult } = require('express-validator/check');
+var { transporter, mailOptions } = require('../modules/transporter.js');
 var User = require('../modules/UserScheme.js');
 var router = express.Router();
 
@@ -58,6 +59,13 @@ router.post('/', [
 			if(err) console.log(err);
 			//req.session.userId = user._id;
 			res.render('sign-up',{success : true});
+			transporter.sendMail(mailOptions, function(error, info){
+				if (error) {
+			    	throw new Error(error);
+				} else {
+					console.log('Email sent: ' + info.response);
+				}
+			});
 		});
 	}
 });
