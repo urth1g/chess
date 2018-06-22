@@ -19,7 +19,7 @@ block head
 	script.
 		$(function () {
 			var name = '';
-			var socket = io();
+			var socket = io('/chat');
 			$('#set-name').on('click', () => {
 				name = $("#name-input").val();
 				$('form[name="form1"]').show();
@@ -28,9 +28,9 @@ block head
 
 			$('form').submit(function(){
 			var m = $('#m').val();
-			socket.emit('chat message', {message:m,sender: name});
-			$('#m').val('');
-			return false;
+				socket.emit('chat message', {message:m,sender: name});
+				$('#m').val('');
+				return false;
 			});
 			socket.on('chat message', function(msg){
 				console.log("received")

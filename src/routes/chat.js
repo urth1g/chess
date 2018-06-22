@@ -3,6 +3,7 @@ var router = express.Router();
 
 io.of('/chat').on('connection', function(socket){
   	socket.on('chat message', function(msg){
+  		console.log(msg);
     	io.of('/chat').emit('chat message', msg)
  	});
 });
