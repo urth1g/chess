@@ -1,11 +1,8 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-try{
-  mongoose.connect('mongodb://localhost/users');
-}catch(e){
-  mongoose.connect('mongodb+srv://cluster0-ftw6k.mongodb.net/test?retryWrites=true');
-}
+//mongoose.connect('mongodb://localhost/users');
+mongoose.connect('mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/test?retryWrites=true');
 
 
 function toLower (v) {
