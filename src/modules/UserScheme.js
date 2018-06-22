@@ -4,7 +4,7 @@ var bcrypt = require('bcrypt');
 var uri = 'mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/users';
 mongoose.connect(uri);
 mongoose.connection.on('error', (err) => {
-  console.log(err);
+  //console.log(err);
 })
 
 
