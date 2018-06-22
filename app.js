@@ -64,8 +64,6 @@ app.use((req,res,next) => {
 	res.render('404');
 });
 
-console.log(process.env.PORT);
-
 http.listen(process.env.PORT || 3000)
 
 
