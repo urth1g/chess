@@ -4,8 +4,12 @@ block content
 	- var format = {'position': 'relative','left': '50%','transform': 'translateX(-50%)','top': '6px'};
 
 	.container
-		if (message)
-			p= message
+		if (error_msg.length > 0)
+			.alert.alert-danger 
+				span= error_msg
+		else if (success_msg.length > 0)
+			.alert.alert-success
+				span= success_msg
 		h2.page-header(style={'text-align':'center'}) Login
 		form(method="POST", action="/login")
 			.form-group

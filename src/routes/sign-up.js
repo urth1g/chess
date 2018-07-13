@@ -1,7 +1,7 @@
 var express = require('express');
 var { check, validationResult } = require('express-validator/check');
 var { transporter, mailOptions } = require('../modules/transporter.js');
-var User = require('../modules/UserScheme.js');
+var { User } = require('../modules/UserScheme.js');
 var router = express.Router();
 
 
@@ -22,8 +22,8 @@ router.post('/', [
 	    	return user.length === 0;
 	    })
 	    .withMessage('Username already exists'),
-	    check('username').isLength({min:1})
-	    .withMessage('Username is required'),
+	    check('username').isLength({min:1, max:20})
+	    .withMessage('Username must contain between 1 and 20 characters.'),
 	    check('username').custom((value) => {
 	    	var regExp = /^[a-zA-Z0-9-_]+$/;
 	    	return 	regExp.test(value);
@@ -53,19 +53,43 @@ router.post('/', [
 			alias: req.body.username,
 			password: req.body.password,
 			email:req.body.email,
-			passwordConfirm: req.body.passwordConfirm
+			passwordConfirm: req.body.passwordConfirm,
 		};
+
+		mailOptions.to = userData.email;
+		console.log(mailOptions.to);
   		User.create(userData, (err,user) => {
 			if(err) console.log(err);
 			//req.session.userId = user._id;
 			res.render('sign-up',{success : true});
 			transporter.sendMail(mailOptions, function(error, info){
 				if (error) {
-			    	throw new Error(error);
+			    	console.log(error);
 				} else {
 					console.log('Email sent: ' + info.response);
 				}
 			});
+		});
+	}
+});
+
+router.get('/confirm/:emailString', (req,res,next) => {
+	if(req.params.emailString){
+		User.findOne({emailString: req.params.emailString}, function(err, user){
+			if(err) next(err)
+			if(!user){
+				req.flash('error_msg','The activation link is no longer valid');
+				return res.redirect('/login');
+			}
+			if(user){
+				console.log(user);
+				User.update(user,{canLogin:true,$unset:{emailString:""}}, (err, numAf, rawResponse) => {
+					if(err) next(err);
+					req.flash('success_msg','Thank you for activating your account! You can login now and start winning! Good Luck');
+					res.redirect('/login')
+					//console.log(numAf)
+				})
+			}
 		});
 	}
 });

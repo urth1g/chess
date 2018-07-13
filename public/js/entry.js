@@ -1,14 +1,15 @@
-import { SendInfo } from "./socket.js";
+import { socket, SendInfo } from "./socket.js";
 
+socket.emit("setRoom",document.location.pathname.split('/')[2]);
 $(document).ready(() => {
   //var board1 = ChessBoard('board', 'start');
-  var socket = io();
   var board,
   game = new Chess(),
   statusEl = $('#status'),
   fenEl = $('#fen'),
   pgnEl = $('#pgn');
 
+  console.log(socket)
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
 var onDragStart = function(source, piece, position, orientation) {
@@ -77,27 +78,24 @@ var updateStatus = function() {
   pgnEl.html(game.pgn());
 };
 
-var cfg = {
-  draggable: true,
-  position: 'start',
-  onDragStart: onDragStart,
-  onDrop: onDrop,
-  onSnapEnd: onSnapEnd,
-  onChange: onChange
-};
+  var cfg = {
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd,
+    onChange: onChange
+  };
 
-board = ChessBoard('board', cfg);
+  board = ChessBoard('board', cfg);
 
 
-$('#flip').click(() => board.flip());
+  $('#flip').click(() => board.flip());
 
-//socket.on('piece moved', function(msg){
-  //board.position(msg);
-//});
+  SendInfo(board,socket,game);
 
-SendInfo(board,socket,game);
+  updateStatus();
 
-updateStatus();
 });
 
 

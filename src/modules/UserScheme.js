@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt');
 
-var uri = 'mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/users';
+var uri = 'mongodb+srv://urth:ikariam2@cluster0-ftw6k.mongodb.net/chesscash';
 mongoose.connect(uri);
 mongoose.connection.on('error', (err) => {
   console.log(err);
@@ -15,6 +15,8 @@ var randomString = function(length) {
     }
     return text;
 };
+
+var emailStr = randomString(20);
 
 function toLower (v) {
   return v.toLowerCase();
@@ -33,6 +35,10 @@ var UserSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     set: toLower
+  },
+  canLogin:{
+    type:Boolean,
+    trim: true
   },
   username: {
     type: String,
@@ -54,6 +60,9 @@ var UserSchema = new mongoose.Schema({
   passwordConfirm: {
     type: String,
     required: true,
+  },
+  rating: {
+    type: Number
   }
 });
 
@@ -68,7 +77,9 @@ UserSchema.pre('save', function (next) {
     next();
   });
 
-  user.emailString = randomString(20);
+  user.emailString = emailStr;
+  user.canLogin = false;
+  user.rating = 1500;
 });
 
 
@@ -84,12 +95,9 @@ UserSchema.methods.validPassword = function(pwd,cb){
 UserSchema.methods.findById = function(id,cb){
   var user = this;
 
-  user.findById(id, callback);
+  user.findById(id, cb);
 }
 
 var User = mongoose.model('users', UserSchema);
 
-
-
-
-module.exports = User;
+module.exports = { User, randomString, emailStr };

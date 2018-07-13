@@ -1,3 +1,5 @@
+var socket = io();
+
 function SendInfo(board,socket,game){
 	socket.on('piece moved', function(msg){
 		game.move(msg);
@@ -5,4 +7,4 @@ function SendInfo(board,socket,game){
 	});
 }
 
-export { socket, SendInfo };
+export { SendInfo, socket };

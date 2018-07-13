@@ -1,0 +1,29 @@
+extends layout
+
+block head
+	script(src="/socket.io/socket.io.js")
+	script(src='js/seek.bundle.js')
+
+block content
+	.container
+		h1(style={'text-align':'center'}) Seek
+		.row
+			.col-sm-12.Games(style={'height':'500px'})
+		.row(style={'text-align':'center'})
+			form(method='post', id='seekForm' style={'margin':'0 auto'})
+				.col-sm-6.Time
+					select#time(name='time', style={'width':'100px'})
+						span Time
+						option(value='1') 1 Minutes
+						option(value='3') 3 Minutes
+				.col-sm-6.Money
+					select#money(name='money', style={'width':'100px'})
+						span Money
+						option 1$
+						option 2.5$
+						option 5$
+						option 10$
+						option 15$
+				button.btn.btn-primary(type='submit') Seek
+
+
