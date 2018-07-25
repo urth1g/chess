@@ -20,6 +20,8 @@ class GameStore extends EventEmitter{
       })
       .then( () => this.emit("change"))
 	  	.catch(err => console.log(err))
+
+      console.log('asd');
  	}
 	getAll(){
     return this.games;
