@@ -60,7 +60,7 @@ router.post('/login', function(req,res,next){
 	},
 	passport.authenticate('local', {failureRedirect:'/login', session: true, failureFlash: true}), 
 	function(req,res, next){
-		res.redirect('/');
+		res.redirect('/seek');
 	});
 
 

@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var { randomString } = require('./UserScheme.js');
+var _ = require('lodash');
 
 var SeekSchema = new mongoose.Schema({
 	gameId: {
@@ -21,6 +22,10 @@ var SeekSchema = new mongoose.Schema({
 	time:{
 		type: Number,
 		trim: true
+	},
+	color:{
+		type:String,
+		trim:true
 	}
 });
 
@@ -33,6 +38,36 @@ SeekSchema.statics.removeByUserAlias = function(userAlias){
 	seek.deleteOne({userAlias: userAlias},(err) => {
 		if(err) console.log(err);
 	});
+}
+
+SeekSchema.statics.checkIfUserExists = function (userAlias,cb){
+	var seek = this;
+
+	seek.findOne({userAlias: userAlias}, function(err,game){
+		if(err) console.log(err);
+
+		if(_.isEmpty(game)){
+			cb();
+		}
+	});
+}
+
+SeekSchema.statics.returnColor = function(userAlias,cb){
+	this.findOne({userAlias: userAlias},'color', function(err,game){
+		if(err) console.log(err);
+
+		if(game){
+			cb(game.color);
+		}
+	});
+}
+
+SeekSchema.statics.returnAmount = function(id,cb){
+	this.findOne({gameId: id}, 'amount', function(err,amount){
+		if (err) console.log(err);
+
+		cb(amount.amount);
+	})
 }
 var Seek = mongoose.model('seek', SeekSchema, 'seek');
 

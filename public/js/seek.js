@@ -12,10 +12,11 @@ $(function() {
 		e.preventDefault();
 		var time = $('#time').val();
 		var money = $('#money').val();
+		var color = $('input[name="color"]:checked').val();
 		$.ajax({
 			type: 'POST',
 			url: '/seek',
-			data: {time: time, money: money},
+			data: {time: time, money: money, color:color},
 		}).then((data) => {
 			console.log(data)
 			socket.emit('newGame', data)
@@ -29,6 +30,10 @@ $(function() {
 
 	socket.on('joinGame', function(game){
 		window.location.pathname = game.href;
+	});
+
+	socket.on('disconnected', function(user){
+		dispatcher.dispatch({type:'DELETE_GAME',payload:user})
 	});
 
 	render(<MyComponent />, document.querySelector('.Games'))

@@ -1,4 +1,4 @@
-var { EventEmitter} = require("events");
+var { EventEmitter } = require("events");
 
 class WebSocketManager extends EventEmitter{
 	constructor(){
@@ -29,6 +29,10 @@ class WebSocketManager extends EventEmitter{
 	findSocketByName(name){
 		var socket = this.sockets.filter(x => x.name == name );
 		return socket[0];
+	}
+	findSocketRatingByName(name){
+		var socket = this.sockets.filter(x => x.name == name );
+		return socket[0].rating;		
 	}
 }
 

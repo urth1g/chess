@@ -1,7 +1,21 @@
 import { socket, SendInfo } from "./socket.js";
 
+var white = null;
+var black = null;
+var user = null;
+
+$.post(document.location.pathname.split('/')[2], async function(data){
+  white = data.white;
+  black = data.black;
+});
+
+fetch('/user',{ credentials : 'same-origin' })
+.then(res => res.json())
+.then(data => user = data.alias);
+
 socket.emit("setRoom",document.location.pathname.split('/')[2]);
 $(document).ready(() => {
+
   //var board1 = ChessBoard('board', 'start');
   var board,
   game = new Chess(),
@@ -9,18 +23,23 @@ $(document).ready(() => {
   fenEl = $('#fen'),
   pgnEl = $('#pgn');
 
-  console.log(socket)
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
 var onDragStart = function(source, piece, position, orientation) {
+  console.log(piece.search(/^b/));
+  console.log(piece.search(/^w/));
+  console.log(piece);
+  console.log(JSON.stringify(piece));
   if (game.game_over() === true ||
-      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+      (user === black && (piece.search(/^b/) !== -1)) ||
+      (user === white && (piece.search(/^w/) !== -1))) {
     return false;
   }
 };
 
 var onChange = function(oldPosition, newPosition) {
+  console.log(white,black);
+  console.log("User: ", user);
   updateStatus();
 };
 
@@ -36,6 +55,7 @@ var onDrop = function(source, target) {
   if (move === null) return 'snapback';
 
   socket.emit('piece moved', move);
+  console.log('moved');
   updateStatus();
 };
 

@@ -1,6 +1,7 @@
 var express = require('express');
 var { Seek } = require('../modules/SeekScheme.js');
 var { WSM } = require('./seek.js');
+var { Game } = require("../modules/GameScheme.js");
 var router = express.Router();
 
 io.on('connection', function(socket){
@@ -29,6 +30,18 @@ router.get('/:gameId', (req,res,next) => {
 		}
 		else next();
 	})
+});
+
+router.post('/:gameId', (req,res,next) => {
+	Game.findOne({gameId: req.params.gameId}, (err,game) => {
+		if(err) next(err);
+
+		if(game){
+			res.status(200).send({white: game.whitePlayer, black: game.blackPlayer});
+		}else{
+			res.status(404).end();
+		}
+	});
 });
 
 module.exports = router;

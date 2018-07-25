@@ -98,6 +98,18 @@ UserSchema.methods.findById = function(id,cb){
   user.findById(id, cb);
 }
 
+UserSchema.statics.findUserRating = function(alias,cb){
+  var seek = this;
+
+  seek.findOne({alias: alias}, 'rating', function(err,game){
+    if(err) console.log(err);
+
+    if(game){
+      cb(game);
+    }
+  })
+}
+
 var User = mongoose.model('users', UserSchema);
 
 module.exports = { User, randomString, emailStr };
