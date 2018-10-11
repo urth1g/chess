@@ -33,21 +33,30 @@ SeekSchema.pre('save', async function(next){
 	this.gameId = await randomString(15);
 });
 
-SeekSchema.statics.removeByUserAlias = function(userAlias){
+SeekSchema.statics.removeByUserAlias = function(userAlias,cb){
 	var seek = this;
 	seek.deleteOne({userAlias: userAlias},(err) => {
 		if(err) console.log(err);
+		
+		if(typeof cb === 'function')
+			cb();
 	});
 }
 
-SeekSchema.statics.checkIfUserExists = function (userAlias,cb){
+SeekSchema.statics.checkIfUserExists = function (userAlias,returnGame,cb){
 	var seek = this;
 
 	seek.findOne({userAlias: userAlias}, function(err,game){
-		if(err) console.log(err);
+		if(err){
+			cb(err);
+		}
 
 		if(_.isEmpty(game)){
-			cb();
+			cb(null);
+		}
+
+		if(returnGame === true && !_.isEmpty(game)){
+			cb(null, game);
 		}
 	});
 }

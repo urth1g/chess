@@ -17,8 +17,10 @@ class WebSocketManager extends EventEmitter{
 
 	setRoom(socket,room){
 		var socket = this.sockets.findIndex(x => x == socket);
-		this.sockets[socket].room = room;
-		this.emit("change", this.sockets);
+		if(typeof this.sockets[socket] !== 'undefined'){
+			this.sockets[socket].room = room;
+			this.emit("change", this.sockets);
+		}
 	}
 
 	socketDisconnected(socket){

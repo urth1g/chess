@@ -5,6 +5,10 @@ var router = express.Router();
 var { Game } = require("../modules/GameScheme.js");
 var WSM = require('../modules/WebSocketManager.js');
 
+function toFixed(value, precision) {
+    var power = Math.pow(10, precision || 0);
+    return Number(Math.round(value * power) / power);
+}
 
 io.on('connection', async function(socket){
 
@@ -24,8 +28,16 @@ io.on('connection', async function(socket){
   	
  	socket.on('joinGame', function(game) {
  		var previousSocket = WSM.findSocketByName(game.userAlias);
- 	    previousSocket.join(game.id, () => console.log('joined'));
- 		socket.join(game.id, () => console.log('joined'));
+ 		if(typeof previousSocket !== 'undefined'){
+ 			previousSocket.join(game.id, () => console.log('joined'));
+ 		}else{
+ 			return;
+ 		}
+ 		if(typeof socket !== 'undefined'){
+ 			socket.join(game.id, () => console.log('joined'));
+ 		}else{
+ 			return;
+ 		}
  		WSM.setRoom(previousSocket, game.id);
  		WSM.setRoom(socket, game.id);
  		var players = [previousSocket.name,socket.name];
@@ -42,6 +54,10 @@ io.on('connection', async function(socket){
  			}else if(color === 'black'){
  				white = players[1];
  				black = players[0];
+ 			}else{
+  				var rand = Math.floor(Math.random()*2);
+ 				white = players[rand];
+ 				black = players.filter(x => x !== white)[0];				
  			}
 
  			Seek.returnAmount(game.id, (amounts) =>{
@@ -52,22 +68,62 @@ io.on('connection', async function(socket){
 	 				whiteRating: WSM.findSocketRatingByName(white),
 	 				blackRating: WSM.findSocketRatingByName(black),
 	 				amount: amounts,
-	 				moves: []
+	 				moves: [],
+	 				fen:[]
  				});
 
-	 			newGame.save(function(err){
-	 				if(err) console.log(err);
-	 			})
- 			})
+ 				var amount = +amounts.substr(0, amounts.length - 1);
+ 				var _amount = +socket.request.session.passport.user.amount.toFixed(2);
+ 				var amountWithFee = amount + (amount * 0.1);
 
- 		io.to(game.id).emit("joinGame", game);
+ 				console.log(amount)
+ 				console.log(_amount);
+ 				console.log(amountWithFee);
+
+ 				if(_amount >= amount){
+ 					User.changeAmount(socket.request.session.passport.user.alias, -amount, function(err,doc){
+ 						if(err) console.log('greska');
+
+ 						if(doc){
+ 							User.roundAmount(socket.request.session.passport.user.alias, doc.amount, function(err,_doc){
+ 								if(err) console.log(err);
+ 							})
+	     				}
+ 					});
+ 					User.changeAmount(previousSocket.request.session.passport.user.alias, -amount, function(err,doc){
+ 						if(err) console.log('greska');
+
+ 						if(doc){
+ 							User.roundAmount(previousSocket.request.session.passport.user.alias, doc.amount, function(err,_doc){
+ 								if(err) console.log(err);
+ 							});
+	     				} 						
+ 					})
+
+		 			newGame.save(function(err){
+		 				if(err) console.log(err);
+		 			});
+		 			io.to(game.id).emit("joinGame", game);
+ 				}else{
+ 					io.to(socket.id).emit("error");
+ 				}
+
+ 			})
  		});
  	});
 
  	socket.on('disconnect', function(){
- 		Seek.removeByUserAlias(socket.request.session.passport.user.alias);
- 		io.emit("disconnected", socket.request.session.passport.user.alias); 
- 		WSM.socketDisconnected(socket);
+ 		if(typeof socket.request.session.passport !== 'undefined'){
+ 	 		Seek.checkIfUserExists(socket.request.session.passport.user.alias, true, (err,game) => {
+	 			if(err) console.log(err);
+
+	 			if(game){
+		 			Seek.removeByUserAlias(socket.request.session.passport.user.alias);
+		 		}
+	 		});			
+	 		io.emit("disconnected", socket.request.session.passport.user.alias); 
+	 		WSM.socketDisconnected(socket);
+	 	}
  	});
 });
 
@@ -81,6 +137,17 @@ router.get('/', (req,res,next) => {
 
 router.post('/', (req,res) => {
 	if(typeof req.user !== 'undefined'){
+		if(req.body.action === 'REQUEST_AMOUNT'){
+			console.log('amount requsted');
+
+			User.returnAmount(req.user.alias, function (err, amount){
+				if(err)
+					console.log(err);
+				else
+					res.status(200).json(amount.amount);
+			});
+			return;
+		}
 		var game = new Seek({
 			userAlias: req.user.alias,
 			amount: req.body.money,
@@ -89,12 +156,18 @@ router.post('/', (req,res) => {
 			color: req.body.color
 		});
 
-		Seek.checkIfUserExists(req.user.alias, () => {
-			game.save(function(err){
-				if(err) console.log(err);
-				res.status(200).send(game);
-			});
-		});
+		var money = req.body.money.substr(0, req.body.money.length - 1);
+		if((req.user.amount >= money) && (money >= 1)){
+			Seek.checkIfUserExists(req.user.alias, false, () => {
+
+				game.save(function(err){
+					if(err) console.log(err);
+					res.status(200).send(game);
+				});
+			});			
+		}else{
+			res.status(200).send({error : true});
+		}
 	}else{
 		res.status(400).end();
 	}

@@ -11,12 +11,16 @@ append head
 
 block content
 	-var margin = "margin-top:5px"
-	#board(style={width:'400px'})
-	button(id='flip', style={"margin-top" : '5px', "background": "green", "color": "red"}) Flip
+	#main
+		#clock
+		#board(style={width:'400px'})
+		button(id='flip', style={"margin-top" : '5px', "background": "green", "color": "red"}) Flip
+		button(id='resign', style={"margin-top" : '5px', "background": "green", "color": "red"}) Resign	
 	p Status: 
 		span#status
 	p FEN: 
 		span#fen
 	p PGN: 
 		span#pgn
+
 

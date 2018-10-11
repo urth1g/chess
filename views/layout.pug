@@ -8,3 +8,7 @@ html
 		block head
 	body
 		block content
+			if user
+				div(style={'text-align': 'center'})
+					h2.name(style={'text-align':'center'})= user.alias
+					h2.money #[span= user.amount.toFixed(2)]$

@@ -11,7 +11,7 @@ class GameStore extends EventEmitter{
 	}
 
 	fetchGames(){
-	  	fetch('https://fierce-fortress-40988.herokuapp.com/seek/fetch',{cache:'no-cache'})
+	  	fetch('http://localhost:3000/seek/fetch',{cache:'no-cache'})
 	  	.then(res => res.json())
 	  	.then(data => {
         this.games.push(data.games)
@@ -45,9 +45,6 @@ class GameStore extends EventEmitter{
 
 const gameStore = new GameStore;
 dispatcher.register(gameStore.handleActions.bind(gameStore))
-
-window.dispatcher = dispatcher;
-window.gameStore = gameStore;
 
 class Button extends React.Component{
   constructor(props){
@@ -116,12 +113,16 @@ class MyComponent extends React.Component {
   		//console.log(zero);
   	}
     return(
-    	<table>
-    		{zero}
-    	</table>
+      <div>
+        <div class="alert alert-danger" style={{'display':'none'}}> 
+          <span> You don't have enough money on your account</span>
+        </div>      
+      	<table>
+      		{zero}
+      	</table>
+      </div>
     );
   }
 }
 
-window.MyComponent = new MyComponent;
 module.exports = {MyComponent,dispatcher};
