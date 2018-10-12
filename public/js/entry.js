@@ -1,11 +1,7 @@
 import { socket, SendInfo } from "./socket.js";
 import React from 'react';
 import {render} from 'react-dom';
-import { Clock } from "../../src/components/Clock.jsx";
-
-
-console.log(Clock);
-console.log("ASD");
+import { Clocks } from "../../src/components/Clock.jsx";
 
 var gameId = document.location.pathname.split('/')[2];
 var white = null;
@@ -194,5 +190,5 @@ var updateStatus = function() {
     }
   })  
 
-  render(<Clock />, document.querySelector("#clock"));
+  render(<Clocks />, document.querySelector("#clock"));
 });

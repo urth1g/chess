@@ -32,6 +32,7 @@ $(function() {
 		return false;
 	})
 
+	// GET back here
 	socket.on('newGame',function (game){
 		dispatcher.dispatch({type:'LOAD_GAME', payload:game})
 	});

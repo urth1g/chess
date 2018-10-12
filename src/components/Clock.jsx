@@ -17,9 +17,7 @@ class Clock extends React.Component{
 	componentDidMount(){
 		this.changeTime();
 	}
-	log(){
-		console.log('hello');
-	}
+
 	processTime(time){
 		var minutes = Math.floor(time/60);
 		var seconds = time % 60;
@@ -39,7 +37,6 @@ class Clock extends React.Component{
 				return { totalTime: state.totalTime - 1 }
 			});
 			that.processTime(that.state.totalTime)
-			that.log();
 		}, 1000);
 	}
 
@@ -56,7 +53,7 @@ class Clock extends React.Component{
 			showingSeconds = this.state.seconds;
 		}
 		return(
-			<div>
+			<div className={this.props.className}>
 				{this.state.minutes !== null &&
 					<h1>{('0' + this.state.minutes).slice(-2) + ":" + showingSeconds}</h1>
 				}
@@ -65,4 +62,18 @@ class Clock extends React.Component{
 	}
 }
 
-module.exports = {Clock};
+class Clocks extends React.Component{
+	constructor(props){
+		super(props);
+	}
+
+	render(){
+		return(
+			<div className="clocks">
+				<Clock className="whiteClock" />
+				<Clock className="blackClock" />
+			</div>
+		)
+	}
+}
+module.exports = {Clocks};
