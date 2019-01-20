@@ -20,8 +20,6 @@ class GameStore extends EventEmitter{
       })
       .then( () => this.emit("change"))
 	  	.catch(err => console.log(err))
-
-      console.log('asd');
  	}
 	getAll(){
     return this.games;
@@ -83,7 +81,6 @@ class MyComponent extends React.Component {
 
     dispatcher.dispatch({type:'FETCH_ALL_GAMES'})
     gameStore.on("change", () => {
-      console.log('heyey')
       this.setState({
         games: gameStore.getAll()
       })

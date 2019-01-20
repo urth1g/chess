@@ -41,7 +41,15 @@ var GameSchema = new mongoose.Schema({
 	loser:{
 		type:String,
 		trim: true
-	}	
+	},
+	whiteTime:{
+		type: Number,
+		trim: true
+	},
+	blackTime: {
+		type: Number,
+		trim: true
+	}
 });
 
 GameSchema.statics.findByGameId = function(id,cb){
@@ -56,7 +64,6 @@ GameSchema.statics.findByGameId = function(id,cb){
 
 GameSchema.statics.updateWinner = function(id,_winner,_loser,cb){
 	if(typeof _winner === 'string' && typeof _loser === 'string'){
-		console.log('asd');
 		this.findOneAndUpdate({gameId: id},{ $set: {winner: _winner, loser: _loser}},function(err,game){
 			if(err) cb(err);
 
@@ -67,6 +74,33 @@ GameSchema.statics.updateWinner = function(id,_winner,_loser,cb){
 	}
 
 }
+
+GameSchema.statics.changeBlackTime = function(id,amount,cb){
+  this.findOneAndUpdate({ gameId: id }, { $inc: { blackTime: amount }}, {new: true}, function(err,doc){
+    if(err){
+      cb(err);
+    }
+    if(doc){
+      if(typeof cb === 'function'){
+        cb(null,doc);
+      }
+    }
+  })
+}
+
+GameSchema.statics.changeWhiteTime = function(id,amount,cb){
+  this.findOneAndUpdate({ gameId: id }, { $inc: { whiteTime: amount }}, {new: true}, function(err,doc){
+    if(err){
+      cb(err);
+    }
+    if(doc){
+      if(typeof cb === 'function'){
+        cb(null,doc);
+      }
+    }
+  })
+}
+
 var Game = mongoose.model('games', GameSchema, 'games');
 
 module.exports = { Game }

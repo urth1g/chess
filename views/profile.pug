@@ -1,0 +1,22 @@
+extends layout
+
+append head
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js')
+    script(src='/js/chart.js')
+
+block content
+    style(type="text/css").
+        p {
+            margin-bottom:0
+        }
+    .container
+        .row
+            .col-sm-12(id="info")
+                span
+                    i(class="fas fa-user") &nbsp;
+                    span= user.alias
+                    p Rating: #[span= user.rating]
+                    p Money: #[span= user.amount]$
+                    p W/L Ratio: #[span= num.toFixed(0)]%
+        div(style="position: relative; height:40vh; width:80vw")
+                canvas(id="chartJSContainer")

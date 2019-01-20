@@ -37,8 +37,8 @@ var UserSchema = new mongoose.Schema({
   },
   emailString:{
     type:String,
-    unique: true,
     trim: true,
+    sparse:true,
     set: toLower
   },
   canLogin:{
@@ -66,6 +66,10 @@ var UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  previousRatings:{
+    type: Object,
+    trim: true
+  },
   rating: {
     type: Number
   },
@@ -89,6 +93,7 @@ UserSchema.pre('save', function (next) {
   user.emailString = emailStr;
   user.canLogin = false;
   user.rating = 1500;
+  user.previousRatings = [0];
 });
 
 
@@ -143,6 +148,20 @@ UserSchema.statics.changeAmount = function(_alias, _amount,cb){
       }
     }
   })
+}
+
+UserSchema.statics.changeRating = function(_alias, _rating, cb){
+  this.findOneAndUpdate({ alias: _alias }, { $set: { rating: _rating }}, {new: true}, function(err,doc){
+    if(err){
+      cb(err);
+    }
+
+    if(doc){
+      if(typeof cb === 'function'){
+        cb(null,doc);
+      } 
+    }
+  });
 }
 
 UserSchema.statics.returnAmount = function(_alias,cb){

@@ -22,6 +22,7 @@ var chatView = require('./src/routes/chat.js');
 var signUpView = require('./src/routes/sign-up.js');
 var authView = require('./src/routes/auth.js');
 var {seekView} = require('./src/routes/seek.js');
+var profileView = require('./src/routes/profile.js');
 
 
 // View engine
@@ -58,17 +59,13 @@ app.use(function (req, res, next) {
     // Website you wish to allow to connect
     // res.setHeader('Access-Control-Allow-Origin', 'https://fierce-fortress-40988.herokuapp.com');
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-    // Request methods you wish to allow
+    
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
 
-    // Pass to next layer of middleware
     next();
 });
 
@@ -77,6 +74,7 @@ app.use('/game', chessView);
 app.use('/chat', chatView);
 app.use('/register', signUpView);
 app.use('/seek', seekView);
+app.use('/profile', profileView);
 app.use('/', authView);
 
 app.use(function(err, req, res, next) {

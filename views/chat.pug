@@ -33,16 +33,11 @@ block head
 				return false;
 			});
 			socket.on('chat message', function(msg){
-				console.log("received")
-				$('#messages').append($('<li>').append(`<b>${msg.sender}</b>: ${msg.message}`));
+				$('#messages').append($('<li>').append(`<b>${msg.sender}</b>:`).text(`${msg.message}`));
 			});	
 		});
 block content
 	ul#messages
-	#name
-		label(for="name-input") Kako ti se zove otac:
-		input#name-input(autocomplete="off")
-		button#set-name Set Name
 	form(action="", name="form1")
 		input#m(autocomplete="off")
 		button send

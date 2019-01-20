@@ -59,56 +59,56 @@ io.on('connection', async function(socket){
  				white = players[rand];
  				black = players.filter(x => x !== white)[0];				
  			}
+ 			if(white && black){
+	 			Seek.returnAmount(game.id, (amounts) =>{
+	 				var newGame = new Game({
+		 				gameId: game.id,
+		 				whitePlayer: white,
+		 				blackPlayer: black,
+		 				whiteTime: 60,
+		 				blackTime: 60,
+		 				whiteRating: WSM.findSocketRatingByName(white),
+		 				blackRating: WSM.findSocketRatingByName(black),
+		 				amount: amounts,
+		 				moves: [],
+		 				fen:[]
+	 				});
 
- 			Seek.returnAmount(game.id, (amounts) =>{
- 				var newGame = new Game({
-	 				gameId: game.id,
-	 				whitePlayer: white,
-	 				blackPlayer: black,
-	 				whiteRating: WSM.findSocketRatingByName(white),
-	 				blackRating: WSM.findSocketRatingByName(black),
-	 				amount: amounts,
-	 				moves: [],
-	 				fen:[]
- 				});
+	 				var amount = +amounts.substr(0, amounts.length - 1);
+	 				var _amount = +socket.request.session.passport.user.amount.toFixed(2);
+	 				var amountWithFee = amount + (amount * 0.1);
 
- 				var amount = +amounts.substr(0, amounts.length - 1);
- 				var _amount = +socket.request.session.passport.user.amount.toFixed(2);
- 				var amountWithFee = amount + (amount * 0.1);
+	 				if(_amount >= amount){
+	 					User.changeAmount(socket.request.session.passport.user.alias, -amount, function(err,doc){
+	 						if(err) console.log('greska');
 
- 				console.log(amount)
- 				console.log(_amount);
- 				console.log(amountWithFee);
+	 						if(doc){
+	 							User.roundAmount(socket.request.session.passport.user.alias, doc.amount, function(err,_doc){
+	 								if(err) console.log(err);
+	 							})
+		     				}
+	 					});
+	 					User.changeAmount(previousSocket.request.session.passport.user.alias, -amount, function(err,doc){
+	 						if(err) console.log('greska');
 
- 				if(_amount >= amount){
- 					User.changeAmount(socket.request.session.passport.user.alias, -amount, function(err,doc){
- 						if(err) console.log('greska');
+	 						if(doc){
+	 							User.roundAmount(previousSocket.request.session.passport.user.alias, doc.amount, function(err,_doc){
+	 								if(err) console.log(err);
+	 							});
+		     				} 						
+	 					})
 
- 						if(doc){
- 							User.roundAmount(socket.request.session.passport.user.alias, doc.amount, function(err,_doc){
- 								if(err) console.log(err);
- 							})
-	     				}
- 					});
- 					User.changeAmount(previousSocket.request.session.passport.user.alias, -amount, function(err,doc){
- 						if(err) console.log('greska');
+			 			newGame.save(function(err){
+			 				if(err) console.log(err);
+			 			});
+			 			io.to(game.id).emit("joinGame", game);
+	 				}else{
+	 					io.to(socket.id).emit("error");
+	 				}
 
- 						if(doc){
- 							User.roundAmount(previousSocket.request.session.passport.user.alias, doc.amount, function(err,_doc){
- 								if(err) console.log(err);
- 							});
-	     				} 						
- 					})
+	 			})
+ 			}
 
-		 			newGame.save(function(err){
-		 				if(err) console.log(err);
-		 			});
-		 			io.to(game.id).emit("joinGame", game);
- 				}else{
- 					io.to(socket.id).emit("error");
- 				}
-
- 			})
  		});
  	});
 

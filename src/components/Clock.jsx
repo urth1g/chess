@@ -1,47 +1,42 @@
 import React from 'react';
 import {EventEmitter} from "events";
-import { Dispatcher } from "flux";
+import { timeStore, dispatcher } from "./TimeStore.jsx";
+import { socket } from "../../public/js/socket.js";
 
 class Clock extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			totalTime: 60,
+			totalTime: this.props.time,
 			minutes: null,
 			seconds: null
-		},
-		this.updateTime = null;
-		this.changeTime = this.changeTime.bind(this);
+		};
 	}
 
 	componentDidMount(){
-		this.changeTime();
+		this.processTime();
 	}
 
-	processTime(time){
-		var minutes = Math.floor(time/60);
-		var seconds = time % 60;
+	processTime(){
+		var minutes = Math.floor(this.state.totalTime/60);
+		var seconds = this.state.totalTime % 60;
 		this.setState((state,props) => {
 			return { minutes: minutes, seconds: seconds}
 		})
 
-		console.log(this.state.minutes, this.state.seconds);
-		if(time == 0)
-			this.clearTime();
+		if(this.state.totalTime == 0){
+			//dispatcher.dispatch({type: 'GAME_ENDED'});
+		}
 	}
 
-	changeTime(){
-		var that = this;
-		this.updateTime = setInterval(function (){
-			that.setState((state, props) => {
-				return { totalTime: state.totalTime - 1 }
+	componentDidUpdate(prevProps){
+		if(this.props.time !== prevProps.time){
+			this.setState({
+				totalTime: Math.round(this.props.time) 
+			}, function () {
+				this.processTime();
 			});
-			that.processTime(that.state.totalTime)
-		}, 1000);
-	}
-
-	clearTime(){
-		clearInterval(this.updateTime);
+		}
 	}
 
 	render(){
@@ -62,16 +57,42 @@ class Clock extends React.Component{
 	}
 }
 
+window.timeStore = timeStore;
+
 class Clocks extends React.Component{
 	constructor(props){
 		super(props);
+		this.whiteClock = React.createRef();
+		this.blackClock = React.createRef();
+		this.state = { 'time' : timeStore.getAll() };
 	}
 
+	componentDidMount(){
+		var _this = this;
+		dispatcher.dispatch({type: 'GET_TIME'});
+		//dispatcher.dispatch({type: 'UPDATE_TIME'});
+
+		timeStore.on("change", () => {
+			_this.setState({
+				time: timeStore.getAll()
+			});
+		});
+
+		socket.on("timeChanged", function(data){
+			dispatcher.dispatch({type: 'SET_TIME', payload:JSON.parse(data)});
+		});
+
+	    socket.on("stopTimer", function(){
+	    	console.log("timerStopped");
+	    	dispatcher.dispatch({type:'STOP_TIMER'});
+	  	});
+	}
 	render(){
+		window.clock = this.whiteClock;
 		return(
 			<div className="clocks">
-				<Clock className="whiteClock" />
-				<Clock className="blackClock" />
+				<Clock time={this.state.time.whiteTime} ref={this.whiteClock} className="whiteClock" />
+				<Clock time={this.state.time.blackTime} ref={this.blackClock} className="blackClock" />
 			</div>
 		)
 	}

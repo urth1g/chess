@@ -2,21 +2,25 @@ import { socket, SendInfo } from "./socket.js";
 import React from 'react';
 import {render} from 'react-dom';
 import { Clocks } from "../../src/components/Clock.jsx";
+import { dispatcher } from "../../src/components/TimeStore.jsx";
 
 var gameId = document.location.pathname.split('/')[2];
 var white = null;
 var black = null;
 var user = null;
-
+var audio = new Audio("../audio/chess.mp3");
+// Fetch current user so you can check if his name corresponds to the player turn
 
 fetch('/user',{ credentials : 'same-origin' })
 .then(res => res.json())
-.then(data => user = data.alias);
+.then(data => { 
+  if(typeof data.alias !== 'undefined')
+    user = data.alias
+});
 
-
+// Join two sockets into the same room
 socket.emit("setRoom",gameId);
 $(document).ready(() => {
-  console.log(document.querySelector("#clock"))
 
   var resigned = false;
   var board,
@@ -29,7 +33,7 @@ $(document).ready(() => {
     if(data !== false){
       game.load(data.fen);
       game.load_pgn(data.pgn);
-      board.position(data.fen);
+      board.position(data.fen, false);
     }
   });
 
@@ -40,13 +44,13 @@ $(document).ready(() => {
     if(user === black)
       board.flip();
   });
-  //var board1 = ChessBoard('board', 'start');
 
 
 // do not pick up pieces if the game is over
 // only pick up pieces for the side to move
 var onDragStart = function(source, piece, position, orientation) {
   if (game.game_over() === true ||
+      user === null ||
       game.game_resigned() === true ||
       game.game_done() === true || 
       (user === black && (piece.search(/^w/) !== -1)) ||
@@ -84,9 +88,10 @@ var onDrop = function(source, target) {
   // illegal move
   if (move === null) return 'snapback';
 
-  console.log('hey');
-
   socket.emit('piece moved', move);
+  dispatcher.dispatch({type:'UPDATE_TIME'});
+  socket.emit("stopTimer");
+
   $.post(gameId, {action: 'GENERATE_MOVES', payload: JSON.stringify({fen: game.fen(), pgn: game.pgn() })});
 
   var finished = updateStatus();
@@ -133,12 +138,7 @@ var updateStatus = function() {
 
   // resigned?
   else if(game.game_resigned() === true){
-    status = user + ' resigned';
-    var _winner = players.filter(x => x !== user)[0]
-    $.post(gameId, { action:'SORT_MOVES', winner: _winner, loser: user} );
-    statusEl.html(status);
-    fenEl.html(game.fen());
-    pgnEl.html(game.pgn());
+
   }
 
   // game still on
@@ -172,8 +172,42 @@ var updateStatus = function() {
 
 
   $('#flip').click(() => board.flip());
-  $('#resign').click(() => { game.set_resign();updateStatus()})
-  SendInfo(board,socket,game);
+  $('#resign').click(() => { 
+    game.set_resign();
+    var players = [white,black];
+    var _winner = players.filter(x => x !== user)[0]
+    $.post(gameId, { action:'SORT_MOVES', winner: _winner, loser: user} );
+    fenEl.html(game.fen());
+    pgnEl.html(game.pgn());
+    socket.emit("GAME_RESIGNED", user); 
+  });
+
+
+  socket.on("GAME_RESIGNED", function(user){
+    status = user + ' resigned';
+    statusEl.html(status);
+  });
+
+  socket.on('piece moved', function(msg){
+    game.move(msg);
+    board.position(game.fen());
+    audio.play();
+    dispatcher.dispatch({type: 'SWITCH_PLAYER'});
+  });
+
+  socket.on("WHITE_WON", function(players){
+    var obj = { action: 'SORT_MOVES', winner: players[0], loser: players[1] };
+    $.post(gameId, obj);
+    game.set_done();
+    statusEl.html(`Game over, ${players[0]} won`);
+  });
+
+  socket.on("BLACK_WON", function(players){
+    var obj = { action: 'SORT_MOVES', winner: players[0], loser: players[1] };
+    $.post(gameId, obj);
+    game.set_done();
+    statusE1.html(`Game over, ${players[0]} won`);
+  });
 
   $.post(`${gameId}/result`, async function(data){
     if(typeof data === 'string'){
@@ -190,5 +224,15 @@ var updateStatus = function() {
     }
   })  
 
+  $("form").submit(function(e){
+    e.preventDefault();
+    var m = $("#m").val();
+    socket.emit("chat message", {msg: m, sender: user});
+    $("#m").val('');
+  })
+
+  socket.on('chat message', function(msg){
+    $('#messages').append($('<li>').append(`<b>${msg.sender}</b>: ${msg.msg}`));
+  }); 
   render(<Clocks />, document.querySelector("#clock"));
 });

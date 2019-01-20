@@ -3,6 +3,8 @@ var { Seek } = require('../modules/SeekScheme.js');
 var { WSM } = require('./seek.js');
 var { Game } = require("../modules/GameScheme.js");
 var { User } = require('../modules/UserScheme.js');
+var sanitizer = require('sanitizer');
+
 var router = express.Router();
 
 io.on('connection', function(socket){
@@ -13,11 +15,128 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('piece moved', function(msg){
-		var namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
-		var Room = WSM.getRoom(namedSocket);	
-		io.to(Room).emit('piece moved', msg);
-	})
+		if(typeof socket.request.session.passport !== 'undefined'){
+			var namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			var Room = WSM.getRoom(namedSocket);	
+			io.to(Room).emit('piece moved', msg);
+		}
+	});
 
+	socket.on('chat message', function(msg){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+			msg.msg = sanitizer.escape(msg.msg);
+			msg.sender = sanitizer.escape(msg.sender);
+			io.to(Room).emit("chat message", msg);
+		}
+	});
+
+	socket.on("GAME_RESIGNED", function(user){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+			io.to(Room).emit("GAME_RESIGNED", user);
+		}
+	});
+
+	socket.on("WHITE_WON", function(url){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+		}
+		Game.findOne({gameId: url}, (err,game) => {
+			if(err) next(err);
+
+			if(game){
+			    var players = [game.whitePlayer, game.blackPlayer];
+				io.to(Room).emit("WHITE_WON", players);
+			}
+		});	
+	});
+
+	socket.on("BLACK_WON", function(url){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+		}
+		Game.findOne({gameId: url}, (err,game) => {
+			if(err) next(err);
+
+			if(game){
+			    var players = [game.blackPlayer, game.whitePlayer];
+				io.to(Room).emit("WHITE_WON", players);
+			}
+		});	
+	});
+	socket.on("REDUCE_WHITE_TIME", function(url){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+		}
+		Game.findOne({gameId: url }, (err,game) => {
+			if(err) next(err);
+
+			if(game){
+				var _whiteTime = +game.whiteTime.toFixed(2);
+				var _blackTime = +game.blackTime.toFixed(2);
+				var i = 0;
+				Game.changeWhiteTime(game.gameId, -.1, function(){	
+					var array = new Float32Array(2);
+					array[0] = _whiteTime;
+					array[1] = _blackTime;			
+					array = JSON.stringify(array);
+					io.to(Room).emit("timeChanged", array);
+				});
+			}
+		});
+	});
+
+	socket.on("REDUCE_BLACK_TIME", function(url){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+		}
+
+		Game.findOne({gameId: url}, (err,game) => {
+			if(err) next(err);
+
+			if(game){
+				var _whiteTime = +game.whiteTime.toFixed(2);
+				var _blackTime = +game.blackTime.toFixed(2);
+
+				Game.changeBlackTime(game.gameId, -.1, function(){	
+					var array = new Float32Array(2);
+					array[0] = _whiteTime;
+					array[1] = _blackTime;			
+					array = JSON.stringify(array);
+					io.to(Room).emit("timeChanged", array);
+				});
+			}
+		});
+	});
+
+	socket.on("stopTimer",function(){
+		var namedSocket = null;
+		var Room = null;
+		if(typeof socket.request.session.passport !== 'undefined'){
+			namedSocket = WSM.findSocketByName(socket.request.session.passport.user.alias);
+			Room = WSM.getRoom(namedSocket);	
+		}		
+		socket.broadcast.to(Room).emit("stopTimer");
+	})
 })
 
 router.get('/:gameId', (req,res,next) => {
@@ -83,6 +202,40 @@ router.post('/:gameId', (req,res,next) => {
 					});
 					Game.updateWinner(req.params.gameId, req.body.winner, req.body.loser, function(err,doc){
 						if(err) console.log(err);
+
+						if(doc){
+							var WR = doc.whiteRating;
+							var BR = doc.blackRating;
+							var K = 30;
+							var whiteWon = null;
+							var blackWon = null;
+							if(req.body.winner === doc.whitePlayer){
+								whiteWon = 1;
+								blackWon = 0;
+							}else{
+								whiteWon = 0;
+								blackWon = 1;
+							}
+
+							var P1 = ( 1.0 / ( 1.0 + Math.pow(10, ((WR-BR)/400))))
+							var P2 = ( 1.0 / ( 1.0 + Math.pow(10, ((BR-WR)/400))))
+
+							P1 = +P1.toFixed(2);
+							P2 = +P2.toFixed(2);
+
+							var WR1 = WR + K*(whiteWon - P1);
+							var BR1 = BR + K*(blackWon - P2);
+
+							WR1 = +WR1.toFixed(0);
+							BR1 = +BR1.toFixed(0);
+
+							User.changeRating(doc.whitePlayer, WR1, (err, doc) => {
+								if(err) console.log(err);
+							});
+							User.changeRating(doc.blackPlayer, BR1, (err, doc) => {
+								if(err) console.log(err);
+							});
+						}
 					})
 				}else if (req.body.winner === 'DRAW' && typeof req.body.players === 'object'){
 					var players = req.body.players;
@@ -94,6 +247,27 @@ router.post('/:gameId', (req,res,next) => {
 								User.roundAmount(x, doc.amount, function(err, _doc){
 									if(err) console.log(err);
 								})
+								var WR = doc.whiteRating;
+								var BR = doc.blackRating;		
+								var K = 30;
+
+								var P1 = ( 1.0 / ( 1.0 + Math.pow(10, ((WR-BR)/400))))
+								var P2 = ( 1.0 / ( 1.0 + Math.pow(10, ((BR-WR)/400))))
+
+								var WR1 = WR + K*(0.5 - P1);
+								var BR1 = BR + K*(0.5 - P2);
+
+								WR1 = +WR1.toFixed(0);
+								BR1 = +BR1.toFixed(0);
+								
+								User.changeRating(doc.whitePlayer, WR1, (err, doc) => {
+									if(err) console.log(err);
+								});
+
+								User.changeRating(doc.blackPlayer, BR1, (err, doc) => {
+									if(err) console.log(err);
+								});
+
 							}
 						})
 					});
@@ -135,6 +309,25 @@ router.post('/:gameId/result', (req,res) => {
 			}else{
 				res.status(200).send(false);
 			}
+		}else{
+			res.status(404).end();
+		}
+	})
+});
+
+router.post('/getTime/:gameId', (req,res) => {
+	Game.findOne({gameId: req.params.gameId}, (err,game) => {
+		if(err) next(err);
+
+		if(game){
+			var _whiteTime = +game.whiteTime.toFixed(2);
+			var _blackTime = +game.blackTime.toFixed(2);
+
+			var array = new Float32Array(2);
+			array[0] = _whiteTime;
+			array[1] = _blackTime;
+			array = JSON.stringify(array);
+			res.status(200).send(array);
 		}else{
 			res.status(404).end();
 		}

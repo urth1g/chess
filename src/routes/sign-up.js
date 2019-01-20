@@ -83,7 +83,7 @@ router.get('/confirm/:emailString', (req,res,next) => {
 			}
 			if(user){
 				console.log(user);
-				User.update(user,{canLogin:true,$unset:{emailString:""}}, (err, numAf, rawResponse) => {
+				User.update(user,{canLogin:true,$unset:{emailString:"0"}}, (err, numAf, rawResponse) => {
 					if(err) next(err);
 					req.flash('success_msg','Thank you for activating your account! You can login now and start winning! Good Luck');
 					res.redirect('/login')
