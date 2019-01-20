@@ -3,6 +3,7 @@ import React from 'react';
 import {render} from 'react-dom';
 import { Clocks } from "../../src/components/Clock.jsx";
 import { dispatcher } from "../../src/components/TimeStore.jsx";
+import CustomChess from "./CustomChess.js";
 
 var gameId = document.location.pathname.split('/')[2];
 var white = null;
@@ -24,7 +25,7 @@ $(document).ready(() => {
 
   var resigned = false;
   var board,
-  game = new Chess(),
+  game = new CustomChess(),
   statusEl = $('#status'),
   fenEl = $('#fen'),
   pgnEl = $('#pgn');
