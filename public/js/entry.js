@@ -187,6 +187,7 @@ var updateStatus = function() {
 
   socket.on("GAME_RESIGNED", function(user){
     status = user + ' resigned';
+    dispatcher.dispatch({type:'STOP_TIMER'});
     statusEl.html(status);
   });
 
