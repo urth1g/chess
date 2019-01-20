@@ -19,7 +19,7 @@ class TimeStore extends EventEmitter{
 	fetchTime(){
 		var _this = this;
 		$.ajax({
-			url: 'http://localhost:3000/game/getTime/' + this.url,
+			url: 'http://fierce-fortress-40988/game/getTime/' + this.url,
 			method: 'POST',
 		}).then(function(data){
 			data = JSON.parse(data);
