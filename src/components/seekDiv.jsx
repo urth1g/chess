@@ -11,7 +11,7 @@ class GameStore extends EventEmitter{
 	}
 
 	fetchGames(){
-	  	fetch('http://localhost:3000/seek/fetch',{cache:'no-cache'})
+	  	fetch('http://fierce-fortress-40988.herokuapp.com/seek/fetch',{cache:'no-cache'})
 	  	.then(res => res.json())
 	  	.then(data => {
         this.games.push(data.games)
