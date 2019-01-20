@@ -93,6 +93,4 @@ class TimeStore extends EventEmitter{
 const timeStore = new TimeStore;
 dispatcher.register(timeStore.handleActions.bind(timeStore));
 
-window.dispatcher = dispatcher;
-
 module.exports = { timeStore, dispatcher }

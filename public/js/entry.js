@@ -180,6 +180,7 @@ var updateStatus = function() {
     $.post(gameId, { action:'SORT_MOVES', winner: _winner, loser: user} );
     fenEl.html(game.fen());
     pgnEl.html(game.pgn());
+    dispatcher.dispatch({type:'STOP_TIMER'});
     socket.emit("GAME_RESIGNED", user); 
   });
 
@@ -200,6 +201,7 @@ var updateStatus = function() {
     var obj = { action: 'SORT_MOVES', winner: players[0], loser: players[1] };
     $.post(gameId, obj);
     game.set_done();
+    dispatcher.dispatch({type:'STOP_TIMER'});
     statusEl.html(`Game over, ${players[0]} won`);
   });
 
@@ -207,6 +209,7 @@ var updateStatus = function() {
     var obj = { action: 'SORT_MOVES', winner: players[0], loser: players[1] };
     $.post(gameId, obj);
     game.set_done();
+    dispatcher.dispatch({type:'STOP_TIMER'});
     statusE1.html(`Game over, ${players[0]} won`);
   });
 
